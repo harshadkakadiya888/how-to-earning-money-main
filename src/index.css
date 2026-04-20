@@ -1,0 +1,461 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Professional Finance Blog Design System */
+
+@layer base {
+  :root {
+    /* Dynamic Color Palette based on #003066 */
+    --background: 0 0% 100%;
+    --foreground: 212 67% 15%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 212 67% 15%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 212 67% 15%;
+
+    /* Primary: Based on #003066 */
+    --primary: 212 67% 20%;
+    --primary-foreground: 0 0% 100%;
+    --primary-hover: 212 67% 15%;
+    --primary-light: 212 67% 95%;
+    --primary-dark: 212 67% 10%;
+
+    /* Secondary: Complementary warm tone */
+    --secondary: 212 15% 96%;
+    --secondary-foreground: 212 67% 15%;
+    --secondary-dark: 212 25% 85%;
+
+    /* Success: Complementary green that works with primary */
+    --success: 142 60% 35%;
+    --success-foreground: 0 0% 100%;
+    --success-light: 142 60% 95%;
+
+    /* Accent: Lighter blue from primary palette */
+    --accent: 212 30% 96%;
+    --accent-foreground: 212 67% 15%;
+    --accent-blue: 212 80% 50%;
+    --accent-hover: 212 30% 90%;
+
+    /* Warning: Complementary orange */
+    --warning: 32 95% 55%;
+    --warning-foreground: 0 0% 100%;
+    --warning-light: 32 95% 95%;
+
+    /* Gold: Premium accent */
+    --gold: 45 90% 50%;
+    --gold-light: 45 90% 95%;
+    --gold-dark: 45 90% 35%;
+
+    /* Muted: Neutral grays with primary undertone */
+    --muted: 212 15% 96%;
+    --muted-foreground: 212 25% 45%;
+    --muted-dark: 212 15% 85%;
+
+    /* Trust & Professional Colors */
+    --trust: 212 67% 20%;
+    --professional: 212 15% 96%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 212 20% 91%;
+    --input: 212 20% 96%;
+    --ring: 212 67% 20%;
+
+    --radius: 0.375rem;
+
+    /* Shadows for depth */
+    --shadow-soft: 0 1px 3px 0 hsl(212 67% 15% / 0.1);
+    --shadow-medium: 0 4px 6px -1px hsl(212 67% 15% / 0.1);
+    --shadow-large: 0 10px 15px -3px hsl(212 67% 15% / 0.1);
+    --shadow-primary: 0 4px 20px hsl(212 67% 20% / 0.15);
+
+    /* Gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(212 67% 20%), hsl(212 67% 15%));
+    --gradient-success: linear-gradient(135deg, hsl(142 60% 35%), hsl(142 60% 40%));
+    --gradient-hero: linear-gradient(135deg, hsl(212 67% 20%) 0%, hsl(212 80% 50%) 100%);
+    --gradient-accent: linear-gradient(135deg, hsl(212 30% 96%), hsl(212 30% 90%));
+
+    /* Typography */
+    --font-body: 'Inter', 'Roboto', Arial, Helvetica, sans-serif;
+    --font-heading: 'Montserrat', 'Raleway', Arial, sans-serif;
+
+    --sidebar-background: 0 0% 98%;
+
+    --sidebar-foreground: 240 5.3% 26.1%;
+
+    --sidebar-primary: 240 5.9% 10%;
+
+    --sidebar-primary-foreground: 0 0% 98%;
+
+    --sidebar-accent: 240 4.8% 95.9%;
+
+    --sidebar-accent-foreground: 240 5.9% 10%;
+
+    --sidebar-border: 220 13% 91%;
+
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+
+  /* Hide scrollbar utility */
+  .scrollbar-hide {
+    -ms-overflow-style: none;  /* Internet Explorer 10+ */
+    scrollbar-width: none;  /* Firefox */
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;  /* Safari and Chrome */
+  }
+
+  .dark {
+    --background: 212 67% 5%;
+    --foreground: 212 15% 95%;
+
+    --card: 212 50% 8%;
+    --card-foreground: 212 15% 95%;
+
+    --popover: 212 50% 8%;
+    --popover-foreground: 212 15% 95%;
+
+    --primary: 212 80% 70%;
+    --primary-foreground: 212 67% 5%;
+    --primary-hover: 212 80% 75%;
+    --primary-light: 212 80% 15%;
+    --primary-dark: 212 80% 60%;
+
+    --secondary: 212 20% 15%;
+    --secondary-foreground: 212 15% 95%;
+    --secondary-dark: 212 20% 10%;
+
+    --success: 142 60% 50%;
+    --success-foreground: 212 67% 5%;
+    --success-light: 142 60% 15%;
+
+    --accent: 212 30% 15%;
+    --accent-foreground: 212 15% 95%;
+    --accent-blue: 212 80% 60%;
+    --accent-hover: 212 30% 20%;
+
+    --warning: 32 95% 60%;
+    --warning-foreground: 212 67% 5%;
+    --warning-light: 32 95% 15%;
+
+    --gold: 45 90% 60%;
+    --gold-light: 45 90% 15%;
+    --gold-dark: 45 90% 50%;
+
+    --muted: 212 20% 15%;
+    --muted-foreground: 212 15% 65%;
+    --muted-dark: 212 20% 10%;
+
+    --trust: 212 80% 70%;
+    --professional: 212 20% 15%;
+
+    --destructive: 0 84% 65%;
+    --destructive-foreground: 212 67% 5%;
+
+    --border: 212 20% 20%;
+    --input: 212 20% 15%;
+    --ring: 212 80% 70%;
+    --sidebar-background: 240 5.9% 10%;
+    --sidebar-foreground: 240 4.8% 95.9%;
+    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 240 4.8% 95.9%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: var(--font-body);
+    font-size: 1.1rem;
+    line-height: 1.6;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-heading);
+    @apply font-bold text-foreground;
+  }
+
+  h1 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    line-height: 1.2;
+  }
+
+  @media (min-width: 1024px) {
+    h1 {
+      font-size: 3rem;
+    }
+  }
+
+  h2 {
+    font-size: 2rem;
+    font-weight: 600;
+    line-height: 1.3;
+  }
+
+  h3 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    line-height: 1.4;
+  }
+
+  .font-heading {
+    font-family: var(--font-heading);
+  }
+
+  .font-body {
+    font-family: var(--font-body);
+  }
+
+  /* Navigation, Buttons, CTAs */
+  nav, button, .btn, .cta {
+    font-family: var(--font-heading);
+    font-weight: 600;
+    font-size: 1.1rem;
+  }
+
+  /* Form elements */
+  input, textarea, select {
+    font-family: var(--font-body);
+    font-size: 1rem;
+  }
+
+  /* Cards and content sections */
+  .card, .content-section {
+    font-family: var(--font-body);
+  }
+
+  .card h1, .card h2, .card h3, .card h4, .card h5, .card h6,
+  .content-section h1, .content-section h2, .content-section h3,
+  .content-section h4, .content-section h5, .content-section h6 {
+    font-family: var(--font-heading);
+  }
+
+  .hero-gradient {
+    background: var(--gradient-hero);
+  }
+
+  .text-success {
+    color: hsl(var(--success));
+  }
+
+  .bg-success {
+    background-color: hsl(var(--success));
+  }
+
+  .text-gold {
+    color: hsl(var(--gold));
+  }
+
+  .bg-gold-light {
+    background-color: hsl(var(--gold-light));
+  }
+
+  .shadow-soft {
+    box-shadow: var(--shadow-soft);
+  }
+
+  .shadow-medium {
+    box-shadow: var(--shadow-medium);
+  }
+
+  .shadow-large {
+    box-shadow: var(--shadow-large);
+  }
+}/* Main blog content tables */
+.blog-content {
+  /* Parent for blog HTML content */
+}
+
+.blog-content .table-wrap {
+  width: 100%;
+  overflow-x: auto;
+  margin: 2rem 0;
+}
+
+.blog-content table {
+  min-width: 600px;
+  width: 100%;
+  border-collapse: collapse;
+  border-spacing: 0;
+  background: white;
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 14px 0 rgba(0,0,0,0.07);
+  font-size: 1rem;
+  border: 1.5px solid #d1d5db;         /* Strong border */
+  table-layout: auto;
+  margin: 0;
+}
+
+.blog-content th, .blog-content td {
+  border: 1.5px solid #d1d5db;         /* Strong borders on all sides */
+  padding: 0.75rem 1rem;
+  text-align: left;
+  vertical-align: middle;
+}
+
+.blog-content th {
+  background: #113155;                 /* Vibrant header */
+  color: #fff;
+  font-weight: 700;
+  font-size: 1rem;
+  letter-spacing: 0.03em;
+}
+
+.blog-content tr:last-child td {
+  border-bottom: 1.5px solid #d1d5db;
+}
+
+/* Zebra striping for alternate rows */
+.blog-content tbody tr:nth-child(odd) td {
+  background: #f1f5f9;
+}
+.blog-content tbody tr:nth-child(even) td {
+  background: #fff;
+}
+
+/* Responsive scroll for tables only */
+.blog-content .table-wrap {
+  overflow-x: auto;
+}
+
+.blog-content .table-wrap {
+  width: 100%;
+  overflow-x: auto;
+  margin: 2rem 0;
+  /* --- Hide scrollbar visually but preserve scroll ability --- */
+  scrollbar-width: none;           /* Firefox */
+  -ms-overflow-style: none;        /* IE and Edge */
+}
+
+.blog-content .table-wrap::-webkit-scrollbar {
+  display: none;                   /* WebKit browsers */
+}
+
+/* Blog table styles */
+.table-wrap {
+  width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-inline: contain;
+  margin: 1rem 0; /* space above/below */
+  background-color: #ffffff;
+  border: 1px solid #e5e7eb; /* light gray border */
+  border-radius: 0.5rem; /* rounded corners */
+  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.06), 0 4px 12px rgba(16, 24, 40, 0.05);
+  cursor: grab; /* indicate draggable */
+  -ms-overflow-style: none; /* IE/Edge */
+  scrollbar-width: none; /* Firefox */
+}
+
+.table-wrap:active { cursor: grabbing; }
+
+.table-wrap::-webkit-scrollbar { display: none; } /* Chrome/Safari */
+
+.table-custom {
+  width: 100%;
+  border-collapse: separate; /* allow inner borders */
+  border-spacing: 0; /* remove default spacing */
+  font-size: 0.95rem;
+  min-width: 600px; /* keep layout when many columns */
+}
+
+/* Header */
+.table-custom thead th,
+.table-custom th {
+  background-color: #13324a; /* dark navy */
+  color: #ffffff;
+  font-weight: 700;
+}
+
+/* Cells */
+.table-custom th,
+.table-custom td {
+  padding: 0.75rem 1rem;
+  text-align: left;
+  vertical-align: top;
+}
+
+/* Inner borders only (no outer border; wrapper provides it) */
+.table-custom th + th,
+.table-custom td + td {
+  border-left: 1px solid #eef2f7;
+}
+
+.table-custom tr + tr td {
+  border-top: 1px solid #eef2f7;
+}
+
+/* Zebra rows (optional, subtle) */
+.table-custom tbody tr:nth-child(even) td {
+  background-color: #f9fbfd;
+}
+
+/* Blog rich-content styles */
+#blog-content p { margin: 0 0 0.85rem; }
+
+/* Blockquote styling (with navy left border) */
+#blog-content blockquote {
+  margin: 1rem 0;
+  padding: 0.75rem 1rem;
+  border-left: 4px solid #13324A; /* navy */
+  background: #f8fafc; /* subtle background */
+  color: #334155; /* slate-700 */
+  font-style: italic;
+}
+#blog-content blockquote p { margin: 0; }
+
+/* Centered, responsive images */
+#blog-content img {
+  display: block;
+  margin: 1rem auto;
+  max-width: 100%;
+  height: auto;
+}
+
+#blog-content sub,
+#blog-content sup { font-size: 0.85em; }
+#blog-content sup { vertical-align: super; }
+#blog-content sub { vertical-align: sub; }
+
+/* Task list (from editors like TipTap) */
+#blog-content ul[data-type="taskList"] {
+  list-style: none;
+  padding-left: 0;
+  margin: 0.75rem 0 1rem;
+}
+#blog-content ul[data-type="taskList"] li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  margin: 0.35rem 0;
+}
+#blog-content ul[data-type="taskList"] li label {
+  display: inline-flex;
+  align-items: center;
+  line-height: 1;
+  margin-top: 0.2rem;
+}
+#blog-content ul[data-type="taskList"] li input[type="checkbox"] {
+  width: 1rem;
+  height: 1rem;
+  accent-color: #0ea5e9; /* sky-500 */
+}
+#blog-content ul[data-type="taskList"] li div { flex: 1; }
+#blog-content ul[data-type="taskList"] p { margin: 0; }
+
+/* Keep inline text-align styles from admin; ensure we don't override */
+#blog-content [style*="text-align:"] { display: block; }
