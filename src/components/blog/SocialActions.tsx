@@ -17,7 +17,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useToast } from '@/hooks/use-toast';
-import axios from 'axios';
+import api from '@/services/api';
 import { apiUrl } from '@/lib/apiBase';
 import { authHeaders, getBlogAccessToken } from '@/lib/blogAuth';
 
@@ -60,7 +60,7 @@ const SocialActions = ({
     const token = getBlogAccessToken();
     try {
       if (token) {
-        const res = await axios.get<{ liked: boolean; likes_count: number }>(
+        const res = await api.get<{ liked: boolean; likes_count: number }>(
           apiUrl(`/api/posts/${postId}/user-like-status/`),
           { headers: authHeaders() }
         );
@@ -68,7 +68,7 @@ const SocialActions = ({
         setIsLiked(Boolean(res.data.liked));
       } else {
         const cid = getOrCreateClientId();
-        const res = await axios.get<{ liked: boolean; likes_count: number }>(
+        const res = await api.get<{ liked: boolean; likes_count: number }>(
           apiUrl(`/api/posts/${postId}/like-status/`),
           { params: { client_id: cid } }
         );
@@ -91,7 +91,7 @@ const SocialActions = ({
     const token = getBlogAccessToken();
     try {
       if (token) {
-        const res = await axios.post<{ liked: boolean; likes_count: number }>(
+        const res = await api.post<{ liked: boolean; likes_count: number }>(
           apiUrl(`/api/posts/${postId}/user-like/`),
           {},
           { headers: { ...authHeaders(), 'Content-Type': 'application/json' } }
@@ -108,7 +108,7 @@ const SocialActions = ({
       const cid = getOrCreateClientId();
       const fd = new FormData();
       fd.append('client_id', cid);
-      const res = await axios.post<{ liked: boolean; likes_count: number }>(
+      const res = await api.post<{ liked: boolean; likes_count: number }>(
         apiUrl(`/api/posts/${postId}/like/`),
         fd
       );

@@ -1,4 +1,4 @@
-import axios from "axios";
+import api from "@/services/api";
 import { apiUrl } from "./apiBase";
 
 /** Shape returned by Django `PostSerializer.to_representation` */
@@ -126,19 +126,19 @@ export function normalizePostForDetail(p: DjangoPostRaw) {
 }
 
 export async function fetchDjangoPostList(): Promise<DjangoPostRaw[]> {
-  const res = await axios.get<{ posts: DjangoPostRaw[] }>(apiUrl("/api/posts/"));
+  const res = await api.get<{ posts: DjangoPostRaw[] }>(apiUrl("/api/posts/"));
   return Array.isArray(res.data.posts) ? res.data.posts : [];
 }
 
 export async function fetchDjangoPostBySlug(slug: string): Promise<DjangoPostRaw> {
-  const res = await axios.get<DjangoPostRaw>(
+  const res = await api.get<DjangoPostRaw>(
     apiUrl(`/api/posts/${encodeURIComponent(slug)}/`)
   );
   return res.data;
 }
 
 export async function fetchDjangoComments(postId: number | string) {
-  const res = await axios.get<{ comments: Record<string, unknown>[] }>(
+  const res = await api.get<{ comments: Record<string, unknown>[] }>(
     apiUrl(`/api/posts/${postId}/comments/`)
   );
   const list = Array.isArray(res.data.comments) ? res.data.comments : [];
@@ -224,10 +224,10 @@ export type BlogsPerCategoryRow = {
 
 export async function fetchBlogsPerCategoryBundle(): Promise<{ data: BlogsPerCategoryRow[] }> {
   const [catsRes, postsRes] = await Promise.all([
-    axios.get<{ categories: { id: number; _id: string; name: string; slug: string }[] }>(
+    api.get<{ categories: { id: number; _id: string; name: string; slug: string }[] }>(
       apiUrl("/api/categories/")
     ),
-    axios.get<{ posts: DjangoPostRaw[] }>(apiUrl("/api/posts/")),
+    api.get<{ posts: DjangoPostRaw[] }>(apiUrl("/api/posts/")),
   ]);
 
   const categories = Array.isArray(catsRes.data.categories) ? catsRes.data.categories : [];

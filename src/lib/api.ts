@@ -1,5 +1,6 @@
-import axios, { isAxiosError } from 'axios';
+import { isAxiosError } from 'axios';
 import { apiUrl, usesDjangoApi } from './apiBase';
+import api from '@/services/api';
 
 // Legacy / third-party APIs (newsletter, success stories, etc.)
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
@@ -92,7 +93,7 @@ export const blogApi = {
       throw new Error('API_BASE_URL is not configured. Please set VITE_API_BASE_URL in your .env file');
     }
     try {
-      const response = await axios.get(`${API_BASE_URL}/blogs`, { params });
+      const response = await api.get(`${API_BASE_URL}/blogs`, { params });
       return response.data;
     } catch (error) {
       console.error('Error fetching blog posts:', error);
@@ -107,7 +108,7 @@ export const blogApi = {
     }
     
     try {
-      const response = await axios.get(`${API_BASE_URL}/blogs/${id}`);
+      const response = await api.get(`${API_BASE_URL}/blogs/${id}`);
       return response.data;
     } catch (error) {
       console.error('Error fetching blog post:', error);
@@ -122,7 +123,7 @@ export const blogApi = {
     }
     
     try {
-      const response = await axios.get(`${API_BASE_URL}/blog`, { params: { category } });
+      const response = await api.get(`${API_BASE_URL}/blog`, { params: { category } });
       return response.data;
     } catch (error) {
       console.error('Error fetching blog posts by category:', error);
@@ -136,7 +137,7 @@ export const blogApi = {
     }
     
     try {
-      const response = await axios.get(`${API_BASE_URL}/blogs/${slug}`);
+      const response = await api.get(`${API_BASE_URL}/blogs/${slug}`);
       return response.data;
     } catch (error) {
       console.error('Error fetching blog by slug:', error);
@@ -149,7 +150,7 @@ export const blogApi = {
       throw new Error('API_BASE_URL is not configured. Please set VITE_API_BASE_URL in your .env file');
     }
     try {
-      const response = await axios.get(`${API_BASE_URL}/blogs/per-category`);
+      const response = await api.get(`${API_BASE_URL}/blogs/per-category`);
       return response.data;
     } catch (error) {
       console.error('Error fetching blogs per category:', error);
@@ -162,7 +163,7 @@ export const categoryApi = {
   // Get all categories
   getAll: async (): Promise<CategoriesResponse> => {
     if (usesDjangoApi()) {
-      const response = await axios.get<{ categories: Category[] }>(apiUrl('/api/categories/'));
+      const response = await api.get<{ categories: Category[] }>(apiUrl('/api/categories/'));
       const raw = Array.isArray(response.data.categories) ? response.data.categories : [];
       const categories = raw.map((c) => ({
         ...c,
@@ -181,7 +182,7 @@ export const categoryApi = {
     }
 
     try {
-      const response = await axios.get(`${API_BASE_URL}/categories`);
+      const response = await api.get(`${API_BASE_URL}/categories`);
       return response.data;
     } catch (error) {
       console.error('Error fetching categories:', error);
@@ -196,7 +197,7 @@ export const categoryApi = {
     }
     
     try {
-      const response = await axios.get(`${API_BASE_URL}/categories/${slug}`);
+      const response = await api.get(`${API_BASE_URL}/categories/${slug}`);
       return response.data;
     } catch (error) {
       console.error('Error fetching category:', error);
@@ -225,7 +226,7 @@ export const newsletterApi = {
     const body = { email: payload.email.trim() };
 
     if (usesDjangoApi()) {
-      const response = await axios.post<{ detail?: string }>(
+      const response = await api.post<{ detail?: string }>(
         apiUrl('/api/newsletter/'),
         body,
         { headers: { 'Content-Type': 'application/json' } }
@@ -238,7 +239,7 @@ export const newsletterApi = {
     }
 
     try {
-      const response = await axios.post(`${API_BASE_URL}/newsletter`, {
+      const response = await api.post(`${API_BASE_URL}/newsletter`, {
         name: 'Subscriber',
         email: body.email,
         interestedCategories: [] as string[],
@@ -252,7 +253,7 @@ export const newsletterApi = {
 
   getReviews: async () => {
     if (usesDjangoApi()) {
-      const response = await axios.get(apiUrl('/api/newsletter-reviews/'), {
+      const response = await api.get(apiUrl('/api/newsletter-reviews/'), {
         params: { page: 1, limit: 200, search: '' },
       });
       return response.data;
@@ -261,7 +262,7 @@ export const newsletterApi = {
       throw new Error('API_BASE_URL is not configured. Please set VITE_API_URL or VITE_API_BASE_URL in your .env file');
     }
     try {
-      const response = await axios.get(`${API_BASE_URL}/newsletter-reviews`);
+      const response = await api.get(`${API_BASE_URL}/newsletter-reviews`);
       return response.data;
     } catch (error) {
       console.error('Error fetching newsletter reviews:', error);
@@ -277,7 +278,7 @@ export const newsletterApi = {
       review: payload.review.trim(),
     };
     if (usesDjangoApi()) {
-      const response = await axios.post(apiUrl('/api/newsletter-reviews/'), body, {
+      const response = await api.post(apiUrl('/api/newsletter-reviews/'), body, {
         headers: { 'Content-Type': 'application/json' },
       });
       return response.data;
@@ -286,7 +287,7 @@ export const newsletterApi = {
       throw new Error('API_BASE_URL is not configured. Please set VITE_API_URL or VITE_API_BASE_URL in your .env file');
     }
     try {
-      const response = await axios.post(`${API_BASE_URL}/newsletter-reviews`, body);
+      const response = await api.post(`${API_BASE_URL}/newsletter-reviews`, body);
       return response.data;
     } catch (error) {
       console.error('Error adding review:', error);
@@ -299,7 +300,7 @@ export const newsletterApi = {
 export const commentApi = {
   addComment: async (blogId: string, payload: { name: string; email: string; comment: string; rating: number }) => {
     if (usesDjangoApi()) {
-      const response = await axios.post(
+      const response = await api.post(
         apiUrl(`/api/posts/${blogId}/comments/`),
         {
           post: String(blogId),
@@ -315,7 +316,7 @@ export const commentApi = {
       throw new Error('VITE_API_URL is not configured');
     }
     try {
-      const response = await axios.post(`${API_BASE_URL}/comment/${blogId}`, payload);
+      const response = await api.post(`${API_BASE_URL}/comment/${blogId}`, payload);
       return response.data;
     } catch (error) {
       console.error('Error posting comment:', error);
@@ -327,7 +328,7 @@ export const commentApi = {
       throw new Error('Comment replies are not supported by the Django blog API.');
     }
     try {
-      const response = await axios.post(`${API_BASE_URL}/comment-replies/${commentId}`, payload);
+      const response = await api.post(`${API_BASE_URL}/comment-replies/${commentId}`, payload);
       return response.data;
     } catch (error) {
       console.error('Error posting comment reply:', error);
@@ -345,7 +346,7 @@ export const successStoriesApi = {
     }
     
     try {
-      const response = await axios.get(`${API_BASE_URL}/success-stories`, { params });
+      const response = await api.get(`${API_BASE_URL}/success-stories`, { params });
       return response.data;
     } catch (error) {
       console.error('Error fetching success stories:', error);
@@ -369,7 +370,7 @@ export const successStoriesApi = {
     }
     
     try {
-      const response = await axios.post(`${API_BASE_URL}/success-stories`, payload);
+      const response = await api.post(`${API_BASE_URL}/success-stories`, payload);
       return response.data;
     } catch (error) {
       console.error('Error submitting success story:', error);
@@ -390,7 +391,7 @@ export const contactApi = {
     };
 
     if (usesDjangoApi()) {
-      const response = await axios.post(apiUrl('/api/contact/'), body, {
+      const response = await api.post(apiUrl('/api/contact/'), body, {
         headers: { 'Content-Type': 'application/json' },
       });
       return response.data;
@@ -401,7 +402,7 @@ export const contactApi = {
     }
 
     try {
-      const response = await axios.post(`${API_BASE_URL}/contact`, body);
+      const response = await api.post(`${API_BASE_URL}/contact`, body);
       return response.data;
     } catch (error) {
       console.error('Error submitting contact form:', error);
