@@ -1,10 +1,13 @@
 import axios from "axios";
 import { getToken } from "../utils/auth";
 
-const API = (import.meta.env.VITE_API_URL || "http://127.0.0.1:8000").replace(/\/$/, "");
+// IMPORTANT:
+// - In production (Vercel), you MUST set VITE_API_URL to your deployed Django API origin (https://...).
+// - In development, leaving VITE_API_URL empty is fine because Vite can proxy same-origin `/api/*`.
+const API = (import.meta.env.VITE_API_URL || "").replace(/\/$/, "");
 
 const api = axios.create({
-  baseURL: API,
+  ...(API ? { baseURL: API } : {}),
   headers: {
     "Content-Type": "application/json",
   },

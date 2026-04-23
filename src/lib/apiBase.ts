@@ -12,9 +12,6 @@ export function usesDjangoApi(): boolean {
   if (getViteApiBaseUrl() !== "") {
     return true;
   }
-  if (import.meta.env.VITE_API_URL === "") {
-    return true;
-  }
   // Dev: same-origin /api/* is proxied to Django in vite.config.ts
   if (import.meta.env.DEV) {
     return true;
@@ -26,6 +23,11 @@ export function apiUrl(path: string): string {
   const p = path.startsWith("/") ? path : `/${path}`;
   const base = getViteApiBaseUrl();
   if (!base) {
+    if (!import.meta.env.DEV && p.startsWith("/api/")) {
+      console.error(
+        "Django API base URL is not configured. Set VITE_API_URL in Vercel to your deployed backend (https://...).",
+      );
+    }
     return p;
   }
   return `${base.replace(/\/$/, "")}${p}`;
