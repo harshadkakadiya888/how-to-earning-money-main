@@ -3,6 +3,8 @@ import { Navigate, useNavigate } from "react-router-dom";
 import api from "../services/api";
 import { isAuthenticated, setToken } from "../utils/auth";
 
+const API = import.meta.env.VITE_API_URL;
+
 const Login = () => {
   const navigate = useNavigate();
   const [username, setUsername] = useState("");
@@ -22,7 +24,7 @@ const Login = () => {
     setSuccess("");
 
     try {
-      const response = await api.post("/api/auth/token/", {
+      const response = await api.post(`${API}/api/auth/token/`, {
         username,
         password,
       });
