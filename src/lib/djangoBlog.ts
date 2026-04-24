@@ -126,8 +126,22 @@ export function normalizePostForDetail(p: DjangoPostRaw) {
 }
 
 export async function fetchDjangoPostList(): Promise<DjangoPostRaw[]> {
-  const res = await api.get<{ posts: DjangoPostRaw[] }>(apiUrl("/api/posts/"));
-  return Array.isArray(res.data.posts) ? res.data.posts : [];
+  const res = await api.get(apiUrl("/api/posts/"));
+  // If VITE_API_URL is misconfigured (e.g. pointing at a frontend/Vercel app),
+  // this endpoint often returns an HTML page (content-type: text/html). In that case,
+  // returning [] silently makes the UI show "No articles found", which is misleading.
+  if (typeof res.data === "string") {
+    throw new Error(
+      "Blog API returned HTML instead of JSON. Check that VITE_API_URL points to your Django backend origin (not a frontend domain)."
+    );
+  }
+  const data = res.data as { posts?: unknown; results?: unknown };
+  if (Array.isArray(data?.posts)) return data.posts as DjangoPostRaw[];
+  // Some DRF configs return `results` for list endpoints.
+  if (Array.isArray(data?.results)) return data.results as DjangoPostRaw[];
+  throw new Error(
+    "Blog API response did not include a posts list. Check backend /api/posts/ response and VITE_API_URL configuration."
+  );
 }
 
 export async function fetchDjangoPostBySlug(slug: string): Promise<DjangoPostRaw> {
