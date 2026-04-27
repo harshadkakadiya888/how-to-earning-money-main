@@ -8,7 +8,7 @@ import BlogCard from '@/components/blog/BlogCard';
 import CommentSection from '@/components/blog/CommentSection';
 import TableOfContents from '@/components/blog/TableOfContents';
 import SocialActions from '@/components/blog/SocialActions';
-import { useBlogWithCommentsBySlug, useBlogPosts } from '@/hooks/useApi';
+import { useBlogWithCommentsBySlug, useBlogPosts, useRecommendedPosts } from '@/hooks/useApi';
 import { coerceTagsFromApi } from '@/lib/djangoBlog';
 import {
   Calendar,
@@ -20,7 +20,7 @@ import {
   Loader2
 } from 'lucide-react';
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from '@/components/ui/accordion';
-import { useMemo, useEffect } from 'react';
+import { useMemo, useEffect, useState } from 'react';
 
 // Utility: Wrap every <table> with a horizontally scrollable div for responsiveness
 function wrapTablesWithDiv(htmlString: string): string {
@@ -35,6 +35,12 @@ function wrapTablesWithDiv(htmlString: string): string {
 const BlogPost = () => {
   const { slug } = useParams();
   const { data, error, refetch, isLoading } = useBlogWithCommentsBySlug(slug || '');
+  const {
+    data: recommendedData,
+    isLoading: isLoadingRecommended,
+    error: recommendedError,
+  } = useRecommendedPosts(slug || '');
+  const [recommendedPosts, setRecommendedPosts] = useState<any[]>([]);
 
   // Define helpers and memoized processing BEFORE any early returns
   const slugify = (text: string) =>
@@ -128,6 +134,14 @@ const BlogPost = () => {
   // Derive blog and comments ASAP (may be undefined while loading)
   const blog = (data as any)?.data?.blog;
   const comments = (data as any)?.data?.comments || [];
+
+  useEffect(() => {
+    if (Array.isArray(recommendedData)) {
+      setRecommendedPosts(recommendedData);
+    } else {
+      setRecommendedPosts([]);
+    }
+  }, [recommendedData]);
 
   // Always call useBlogPosts to keep hook order stable
   const currentCategoryId = (blog?.category && (blog.category as any)._id) || (blog?.category as any);
@@ -348,6 +362,43 @@ const BlogPost = () => {
               </aside>
           </div>
         </div>
+
+        {/* Recommended Posts */}
+        <section className="py-12">
+          <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h2 className="text-2xl font-bold mb-6">🔥 Recommended for you</h2>
+            {isLoadingRecommended ? (
+              <div className="flex items-center gap-2 text-muted-foreground">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                <span>Loading recommendations...</span>
+              </div>
+            ) : recommendedError ? (
+              <div className="text-sm text-muted-foreground">Couldn’t load recommendations.</div>
+            ) : recommendedPosts.length === 0 ? (
+              <div className="text-sm text-muted-foreground">No recommendations yet.</div>
+            ) : (
+              <Card>
+                <CardContent className="p-4">
+                  <ul className="space-y-3">
+                    {recommendedPosts.map((p: any) => (
+                      <li key={p.slug} className="flex items-center justify-between gap-4">
+                        <Link
+                          to={`/blog/${p.slug}`}
+                          className="font-medium hover:underline line-clamp-2"
+                        >
+                          {p.title}
+                        </Link>
+                        <span className="text-xs text-muted-foreground whitespace-nowrap">
+                          {typeof p.views === 'number' ? p.views : 0} views
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                </CardContent>
+              </Card>
+            )}
+          </div>
+        </section>
 
         {/* Related Articles */}
         {relatedPosts.length > 0 ? (

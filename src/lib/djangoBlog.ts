@@ -151,6 +151,28 @@ export async function fetchDjangoPostBySlug(slug: string): Promise<DjangoPostRaw
   return res.data;
 }
 
+export type RecommendedPost = {
+  title: string;
+  slug: string;
+  views: number;
+};
+
+export async function fetchDjangoPostRecommendations(slug: string): Promise<RecommendedPost[]> {
+  const res = await api.get(apiUrl(`/api/posts/${encodeURIComponent(slug)}/recommendations/`));
+  if (typeof res.data === "string") {
+    throw new Error("Recommendations API returned HTML instead of JSON.");
+  }
+  if (!Array.isArray(res.data)) return [];
+  return res.data
+    .filter((x: any) => x && typeof x === "object")
+    .map((x: any) => ({
+      title: String(x.title ?? ""),
+      slug: String(x.slug ?? ""),
+      views: typeof x.views === "number" ? x.views : Number(x.views ?? 0) || 0,
+    }))
+    .filter((x) => x.title && x.slug);
+}
+
 export async function fetchDjangoComments(postId: number | string) {
   const res = await api.get<{ comments: Record<string, unknown>[] }>(
     apiUrl(`/api/posts/${postId}/comments/`)

@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import {
-  Heart,
+  ThumbsUp,
   Share2,
   MessageCircle,
   Facebook,
@@ -20,18 +20,8 @@ import { useToast } from '@/hooks/use-toast';
 import api from '@/services/api';
 import { apiUrl } from '@/lib/apiBase';
 import { authHeaders, getBlogAccessToken } from '@/lib/blogAuth';
-
-function getOrCreateClientId(): string {
-  let cid = localStorage.getItem('blog_client_id');
-  if (!cid) {
-    cid =
-      typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function'
-        ? crypto.randomUUID()
-        : `cid-${Date.now()}-${Math.random().toString(36).slice(2, 11)}`;
-    localStorage.setItem('blog_client_id', cid);
-  }
-  return cid;
-}
+import { getReaderClientId, getReaderEmail } from '@/lib/blogReaderAuth';
+import { ReaderEmailDialog } from '@/components/blog/ReaderEmailDialog';
 
 interface SocialActionsProps {
   postId: string;
@@ -54,6 +44,8 @@ const SocialActions = ({
   const [likes, setLikes] = useState(initialLikes);
   const [isLiked, setIsLiked] = useState(initialLikedByMe);
   const [isShared, setIsShared] = useState(false);
+  const [emailOpen, setEmailOpen] = useState(false);
+  const [pendingAction, setPendingAction] = useState<'like' | 'comment' | null>(null);
 
   const loadStatus = useCallback(async () => {
     if (!postId) return;
@@ -67,10 +59,11 @@ const SocialActions = ({
         setLikes(typeof res.data.likes_count === 'number' ? res.data.likes_count : initialLikes);
         setIsLiked(Boolean(res.data.liked));
       } else {
-        const cid = getOrCreateClientId();
+        const cid = getReaderClientId();
+        const em = getReaderEmail();
         const res = await api.get<{ liked: boolean; likes_count: number }>(
           apiUrl(`/api/posts/${postId}/like-status/`),
-          { params: { client_id: cid } }
+          { params: { client_id: cid, ...(em ? { email: em } : {}) } }
         );
         setLikes(typeof res.data.likes_count === 'number' ? res.data.likes_count : initialLikes);
         setIsLiked(Boolean(res.data.liked));
@@ -87,7 +80,7 @@ const SocialActions = ({
     void loadStatus();
   }, [postId, initialLikes, initialLikedByMe, loadStatus]);
 
-  const handleLike = async () => {
+  const runLike = async () => {
     const token = getBlogAccessToken();
     try {
       if (token) {
@@ -105,13 +98,15 @@ const SocialActions = ({
         return;
       }
 
-      const cid = getOrCreateClientId();
+      const cid = getReaderClientId();
+      const em = getReaderEmail();
       const fd = new FormData();
       fd.append('client_id', cid);
-      const res = await api.post<{ liked: boolean; likes_count: number }>(
-        apiUrl(`/api/posts/${postId}/like/`),
-        fd
-      );
+      if (em) {
+        fd.append('email', em);
+        fd.append('username', em.split('@')[0] || 'Reader');
+      }
+      const res = await api.post<{ liked: boolean; likes_count: number }>(apiUrl(`/api/posts/${postId}/like/`), fd);
       setIsLiked(Boolean(res.data.liked));
       setLikes(typeof res.data.likes_count === 'number' ? res.data.likes_count : likes);
       toast({
@@ -125,6 +120,33 @@ const SocialActions = ({
         variant: 'destructive',
       });
     }
+  };
+
+  const handleLike = async () => {
+    if (!getBlogAccessToken() && !getReaderEmail()) {
+      setPendingAction('like');
+      setEmailOpen(true);
+      return;
+    }
+    await runLike();
+  };
+
+  const handleComment = () => {
+    if (!getBlogAccessToken() && !getReaderEmail()) {
+      setPendingAction('comment');
+      setEmailOpen(true);
+      return;
+    }
+    onCommentClick?.();
+  };
+
+  const onEmailSuccess = () => {
+    if (pendingAction === 'like') {
+      void runLike();
+    } else if (pendingAction === 'comment') {
+      onCommentClick?.();
+    }
+    setPendingAction(null);
   };
 
   const handleShare = (platform?: string) => {
@@ -179,13 +201,20 @@ const SocialActions = ({
 
   return (
     <div className="flex flex-wrap items-center gap-3">
+      <ReaderEmailDialog
+        open={emailOpen}
+        onOpenChange={setEmailOpen}
+        onSuccess={onEmailSuccess}
+      />
       <Button
         variant={isLiked ? 'default' : 'outline'}
         size="sm"
         onClick={() => void handleLike()}
-        className={isLiked ? 'text-red-50 border-red-400 bg-red-600 hover:bg-red-700' : ''}
+        className={isLiked ? 'text-white border-sky-600 bg-sky-600 hover:bg-sky-700' : ''}
       >
-        <Heart className={`h-4 w-4 mr-1 ${isLiked ? 'fill-current' : ''}`} />
+        <ThumbsUp
+          className={`h-4 w-4 mr-1 text-blue-500 ${isLiked ? 'text-white' : ''}`}
+        />
         {isLiked ? 'Unlike' : 'Like'} ({likes})
       </Button>
 
@@ -216,7 +245,7 @@ const SocialActions = ({
         </DropdownMenuContent>
       </DropdownMenu>
 
-      <Button variant="outline" size="sm" onClick={onCommentClick}>
+      <Button variant="outline" size="sm" onClick={handleComment}>
         <MessageCircle className="h-4 w-4 mr-1" />
         Comment
       </Button>

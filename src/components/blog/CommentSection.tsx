@@ -16,6 +16,8 @@ import {
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { commentApi } from '@/lib/api';
+import { getReaderEmail, setReaderEmail, isValidEmail } from '@/lib/blogReaderAuth';
+import { ReaderEmailDialog } from '@/components/blog/ReaderEmailDialog';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -60,22 +62,28 @@ const CommentSection = ({ postId, comments, refetchPost }: CommentSectionProps) 
 
   const [showAll, setShowAll] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [emailGateOpen, setEmailGateOpen] = useState(false);
   const [saveUserInfo, setSaveUserInfo] = useState(false);
   const [expandedReplies, setExpandedReplies] = useState<Set<string>>(new Set());
 
   // Load saved user info from localStorage
   React.useEffect(() => {
+    const globalEmail = getReaderEmail();
     const savedUserInfo = localStorage.getItem('commentUserInfo');
+    if (globalEmail) {
+      setNewComment((prev) => ({ ...prev, email: prev.email || globalEmail }));
+    }
     if (savedUserInfo) {
       const { name, email } = JSON.parse(savedUserInfo);
-      setNewComment(prev => ({ ...prev, author: name, email }));
-      setReplyContent(prev => ({ ...prev, author: name, email }));
+      setNewComment((prev) => ({ ...prev, author: name || prev.author, email: prev.email || email }));
+      setReplyContent((prev) => ({ ...prev, author: name, email: email || prev.email }));
     }
   }, []);
 
   const handleSubmitComment = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newComment.author || !newComment.email || !newComment.content) {
+    const effectiveEmail = (newComment.email || getReaderEmail() || '').trim();
+    if (!newComment.author || !newComment.content) {
       toast({
         title: "Error",
         description: "Please fill in all fields",
@@ -83,10 +91,27 @@ const CommentSection = ({ postId, comments, refetchPost }: CommentSectionProps) 
       });
       return;
     }
+    if (!effectiveEmail) {
+      setEmailGateOpen(true);
+      return;
+    }
+    if (!isValidEmail(effectiveEmail)) {
+      toast({
+        title: "Error",
+        description: "Please enter a valid email address",
+        variant: "destructive"
+      });
+      return;
+    }
     try {
+      try {
+        setReaderEmail(effectiveEmail);
+      } catch {
+        // ignore
+      }
       await commentApi.addComment(postId, {
         name: newComment.author,
-        email: newComment.email,
+        email: effectiveEmail,
         comment: newComment.content,
         rating: newComment.rating,
       });
@@ -95,7 +120,7 @@ const CommentSection = ({ postId, comments, refetchPost }: CommentSectionProps) 
       if (saveUserInfo) {
         localStorage.setItem('commentUserInfo', JSON.stringify({ 
           name: newComment.author, 
-          email: newComment.email 
+          email: effectiveEmail
         }));
       }
       

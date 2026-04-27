@@ -6,6 +6,7 @@ import {
   fetchBlogsPerCategoryBundle,
   fetchDjangoPostDetailBundle,
   fetchDjangoPostList,
+  fetchDjangoPostRecommendations,
 } from '@/lib/djangoBlog';
 
 // Blog API hooks — Django: GET /api/posts/ (single fetch, filter/paginate client-side)
@@ -63,6 +64,16 @@ export const useBlogWithCommentsBySlug = (slug: string) => {
   return useQuery({
     queryKey: ['django-blog-with-comments', slug],
     queryFn: () => fetchDjangoPostDetailBundle(slug),
+    enabled: !!slug,
+    staleTime: 60 * 1000,
+    gcTime: 10 * 60 * 1000,
+  });
+};
+
+export const useRecommendedPosts = (slug: string) => {
+  return useQuery({
+    queryKey: ['django-blog-recommendations', slug],
+    queryFn: () => fetchDjangoPostRecommendations(slug),
     enabled: !!slug,
     staleTime: 60 * 1000,
     gcTime: 10 * 60 * 1000,
