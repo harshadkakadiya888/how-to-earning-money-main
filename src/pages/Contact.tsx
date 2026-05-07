@@ -136,10 +136,7 @@ const Contact = () => {
                     <p className="text-muted-foreground mb-4">
                       Send us an email for detailed questions, collaboration inquiries, or feedback.
                     </p>
-                    <a 
-                      href="mailto:howtoearningmoneyy@gmail.com"
-                      className="text-primary hover:underline font-medium"
-                    >
+                    <a href="mailto:howtoearningmoneyy@gmail.com">
                       howtoearningmoneyy@gmail.com
                     </a>
                   </CardContent>
