@@ -14,8 +14,10 @@ export const useBlogPosts = (params?: { page?: number; limit?: number; category?
   const q = useQuery({
     queryKey: ['django-blog-posts'],
     queryFn: fetchDjangoPostList,
-    staleTime: 60 * 1000,
+    staleTime: 0,
     gcTime: 10 * 60 * 1000,
+    refetchOnMount: 'always',
+    refetchOnWindowFocus: true,
   });
 
   const shaped = useMemo(
@@ -164,7 +166,9 @@ export const useBlogsPerCategory = () => {
   return useQuery({
     queryKey: ['django-blogs-per-category'],
     queryFn: () => fetchBlogsPerCategoryBundle(),
-    staleTime: 60 * 1000,
+    staleTime: 0,
     gcTime: 10 * 60 * 1000,
+    refetchOnMount: 'always',
+    refetchOnWindowFocus: true,
   });
 }; 

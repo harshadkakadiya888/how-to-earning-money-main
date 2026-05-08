@@ -1,5 +1,20 @@
-import api from "@/services/api";
-import { apiUrl } from "./apiBase";
+import { apiUrl, getViteApiBaseUrl } from "./apiBase";
+
+const RENDER_DJANGO_ORIGIN = "https://django-how-to-earn-money.onrender.com";
+
+function djangoOrigin(): string {
+  const configured = getViteApiBaseUrl();
+  return configured || RENDER_DJANGO_ORIGIN;
+}
+
+async function fetchJson<T>(path: string): Promise<T> {
+  const url = path.startsWith("http") ? path : `${djangoOrigin()}${path.startsWith("/") ? "" : "/"}${path}`;
+  const res = await fetch(url, { cache: "no-store" });
+  if (!res.ok) {
+    throw new Error(`Django API request failed (${res.status}) for ${url}`);
+  }
+  return (await res.json()) as T;
+}
 
 /** Shape returned by Django `PostSerializer.to_representation` */
 export type DjangoPostRaw = {
@@ -126,16 +141,7 @@ export function normalizePostForDetail(p: DjangoPostRaw) {
 }
 
 export async function fetchDjangoPostList(): Promise<DjangoPostRaw[]> {
-  const res = await api.get(apiUrl("/api/posts/"));
-  // If VITE_API_URL is misconfigured (e.g. pointing at a frontend/Vercel app),
-  // this endpoint often returns an HTML page (content-type: text/html). In that case,
-  // returning [] silently makes the UI show "No articles found", which is misleading.
-  if (typeof res.data === "string") {
-    throw new Error(
-      "Blog API returned HTML instead of JSON. Check that VITE_API_URL points to your Django backend origin (not a frontend domain)."
-    );
-  }
-  const data = res.data as { posts?: unknown; results?: unknown };
+  const data = await fetchJson<{ posts?: unknown; results?: unknown }>(apiUrl("/api/posts/"));
   if (Array.isArray(data?.posts)) return data.posts as DjangoPostRaw[];
   // Some DRF configs return `results` for list endpoints.
   if (Array.isArray(data?.results)) return data.results as DjangoPostRaw[];
@@ -145,10 +151,7 @@ export async function fetchDjangoPostList(): Promise<DjangoPostRaw[]> {
 }
 
 export async function fetchDjangoPostBySlug(slug: string): Promise<DjangoPostRaw> {
-  const res = await api.get<DjangoPostRaw>(
-    apiUrl(`/api/posts/${encodeURIComponent(slug)}/`)
-  );
-  return res.data;
+  return await fetchJson<DjangoPostRaw>(apiUrl(`/api/posts/${encodeURIComponent(slug)}/`));
 }
 
 export type RecommendedPost = {
@@ -158,12 +161,9 @@ export type RecommendedPost = {
 };
 
 export async function fetchDjangoPostRecommendations(slug: string): Promise<RecommendedPost[]> {
-  const res = await api.get(apiUrl(`/api/posts/${encodeURIComponent(slug)}/recommendations/`));
-  if (typeof res.data === "string") {
-    throw new Error("Recommendations API returned HTML instead of JSON.");
-  }
-  if (!Array.isArray(res.data)) return [];
-  return res.data
+  const data = await fetchJson<unknown>(apiUrl(`/api/posts/${encodeURIComponent(slug)}/recommendations/`));
+  if (!Array.isArray(data)) return [];
+  return data
     .filter((x: any) => x && typeof x === "object")
     .map((x: any) => ({
       title: String(x.title ?? ""),
@@ -174,10 +174,10 @@ export async function fetchDjangoPostRecommendations(slug: string): Promise<Reco
 }
 
 export async function fetchDjangoComments(postId: number | string) {
-  const res = await api.get<{ comments: Record<string, unknown>[] }>(
+  const data = await fetchJson<{ comments: Record<string, unknown>[] }>(
     apiUrl(`/api/posts/${postId}/comments/`)
   );
-  const list = Array.isArray(res.data.comments) ? res.data.comments : [];
+  const list = Array.isArray(data.comments) ? data.comments : [];
   return list.map((c) => ({
     ...c,
     _id: String((c as { _id?: string })._id ?? (c as { id?: number }).id ?? ""),
@@ -259,15 +259,15 @@ export type BlogsPerCategoryRow = {
 };
 
 export async function fetchBlogsPerCategoryBundle(): Promise<{ data: BlogsPerCategoryRow[] }> {
-  const [catsRes, postsRes] = await Promise.all([
-    api.get<{ categories: { id: number; _id: string; name: string; slug: string }[] }>(
+  const [catsData, postsData] = await Promise.all([
+    fetchJson<{ categories: { id: number; _id: string; name: string; slug: string }[] }>(
       apiUrl("/api/categories/")
     ),
-    api.get<{ posts: DjangoPostRaw[] }>(apiUrl("/api/posts/")),
+    fetchJson<{ posts: DjangoPostRaw[] }>(apiUrl("/api/posts/")),
   ]);
 
-  const categories = Array.isArray(catsRes.data.categories) ? catsRes.data.categories : [];
-  const posts = Array.isArray(postsRes.data.posts) ? postsRes.data.posts : [];
+  const categories = Array.isArray(catsData.categories) ? catsData.categories : [];
+  const posts = Array.isArray(postsData.posts) ? postsData.posts : [];
 
   const rows: BlogsPerCategoryRow[] = categories.map((cat) => {
     const inCat = posts.filter((p) => p.category.id === cat.id);
