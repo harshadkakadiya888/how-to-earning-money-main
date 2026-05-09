@@ -1,7 +1,9 @@
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Calendar, Clock, User } from 'lucide-react';
+import { getCategoryBlogImageFallback, isLikelyValidImageUrl } from '@/lib/blogImageFallbacks';
 
 interface BlogPost {
   _id?: string;
@@ -23,6 +25,7 @@ interface BlogPost {
   featured?: boolean;
   imageUrl?: string;
   image?: string;
+  featured_image_source_url?: string | null;
   tags: string[];
 }
 
@@ -41,17 +44,42 @@ const BlogCard = ({ post, variant = 'default' }: BlogCardProps) => {
   const postId = post._id || post.id || 'unknown';
   const postSlug = post.slug || postId;
 
+  const fallback = getCategoryBlogImageFallback(categoryName);
+  const pickPrimary = () => {
+    const candidates = [
+      post.imageUrl,
+      post.image,
+      post.featured_image_source_url,
+      categoryImage,
+    ];
+    for (const c of candidates) {
+      if (isLikelyValidImageUrl(c)) return c!.trim();
+    }
+    return '';
+  };
+
+  const [imgSrc, setImgSrc] = useState<string>(() => {
+    const p = pickPrimary();
+    return p || fallback;
+  });
+
+  useEffect(() => {
+    const fb = getCategoryBlogImageFallback(categoryName);
+    const p = pickPrimary();
+    setImgSrc(p || fb);
+  }, [post.imageUrl, post.image, post.featured_image_source_url, categoryImage, categoryName, post.slug]);
+
   return (
     <Card className={`group hover:shadow-medium transition-all duration-300 ${isFeatured ? 'border-primary' : ''}`}>
       <Link to={`/blog/${postSlug}`}>
         {!isCompact && (
           <div className="relative overflow-hidden rounded-t-lg">
             <img
-              src={post.imageUrl || post.image || categoryImage || '/placeholder.svg'}
+              src={imgSrc}
               alt={post.title}
               className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
-              onError={(e) => {
-                e.currentTarget.src = '/placeholder.svg';
+              onError={() => {
+                setImgSrc((cur) => (cur === fallback ? cur : fallback));
               }}
             />
             {isFeatured && (

@@ -20,7 +20,8 @@ import {
   Loader2
 } from 'lucide-react';
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from '@/components/ui/accordion';
-import { useMemo, useEffect } from 'react';
+import { useMemo, useEffect, useState } from 'react';
+import { getCategoryBlogImageFallback, isLikelyValidImageUrl } from '@/lib/blogImageFallbacks';
 
 // Utility: Wrap every <table> with a horizontally scrollable div for responsiveness
 function wrapTablesWithDiv(htmlString: string): string {
@@ -128,6 +129,28 @@ const BlogPost = () => {
   // Derive blog and comments ASAP (may be undefined while loading)
   const blog = (data as any)?.data?.blog;
   const comments = (data as any)?.data?.comments || [];
+
+  const heroCategoryName =
+    typeof blog?.category === 'object' ? String((blog.category as any)?.name || '') : '';
+  const heroFallback = useMemo(
+    () => getCategoryBlogImageFallback(heroCategoryName),
+    [heroCategoryName],
+  );
+
+  const heroPrimary = useMemo(() => {
+    if (!blog) return '';
+    const c =
+      (blog as any).imageUrl ||
+      (blog as any).image ||
+      (blog as any).featured_image_source_url ||
+      (blog as any).featured_image;
+    return isLikelyValidImageUrl(c) ? String(c).trim() : '';
+  }, [blog]);
+
+  const [heroSrc, setHeroSrc] = useState(heroFallback);
+  useEffect(() => {
+    setHeroSrc(heroPrimary || heroFallback);
+  }, [heroPrimary, heroFallback]);
 
   // Always call useBlogPosts to keep hook order stable
   const currentCategoryId = (blog?.category && (blog.category as any)._id) || (blog?.category as any);
@@ -240,14 +263,15 @@ const BlogPost = () => {
                     <p className="text-muted-foreground">{blog.articleSummary}</p>
                   </CardContent>
                 </Card>
-                {(blog.imageUrl || blog.image) && (
-                    <img
-                        src={blog.imageUrl || blog.image}
-                        alt={blog.title}
-                        className="w-full h-96 object-cover rounded-lg mb-8"
-                        onError={e => { e.currentTarget.src = '/placeholder.svg'; }}
-                    />
-                )}
+                <img
+                    src={heroSrc}
+                    alt={blog.title}
+                    className="w-full h-96 object-cover rounded-lg mb-8"
+                    loading="lazy"
+                    onError={() => {
+                      setHeroSrc((cur) => (cur === heroFallback ? cur : heroFallback));
+                    }}
+                />
                 {/* Article Actions */}
                 <div className="flex flex-wrap items-center justify-between py-4 border-y">
                   <SocialActions

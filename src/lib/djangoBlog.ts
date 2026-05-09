@@ -25,6 +25,7 @@ export type DjangoPostRaw = {
   excerpt: string;
   content: string;
   featured_image: string | null;
+  featured_image_source_url?: string | null;
   author: string;
   read_time: string;
   category: { id: number; _id: string; name: string; slug: string };
@@ -108,6 +109,10 @@ export type BlogPostsListEnvelope = {
 export function normalizePostForCard(p: DjangoPostRaw) {
   const createdAt = p.created_at || new Date().toISOString();
   const readTime = (p.read_time || "1 min").trim();
+  const primary =
+    p.featured_image ||
+    (p.featured_image_source_url && String(p.featured_image_source_url).trim()) ||
+    null;
   return {
     _id: p._id,
     id: String(p.id),
@@ -119,9 +124,10 @@ export function normalizePostForCard(p: DjangoPostRaw) {
     createdAt,
     readTime,
     author: p.author || "",
-    featured_image: p.featured_image,
-    imageUrl: p.featured_image || undefined,
-    image: p.featured_image || undefined,
+    featured_image: primary,
+    featured_image_source_url: p.featured_image_source_url ?? null,
+    imageUrl: primary || undefined,
+    image: primary || undefined,
     tags: coerceTagsFromApi(p.tags),
   };
 }
