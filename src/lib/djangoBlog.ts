@@ -141,7 +141,11 @@ export function normalizePostForDetail(p: DjangoPostRaw) {
 }
 
 export async function fetchDjangoPostList(): Promise<DjangoPostRaw[]> {
-  const data = await fetchJson<{ posts?: unknown; results?: unknown }>(apiUrl("/api/posts/"));
+  // Request a high page size so client-side /blog pagination matches server ordering
+  // (newest first: `order_by("-created_at", "-id")` on the backend).
+  const data = await fetchJson<{ posts?: unknown; results?: unknown }>(
+    apiUrl("/api/posts/?limit=500")
+  );
   if (Array.isArray(data?.posts)) return data.posts as DjangoPostRaw[];
   // Some DRF configs return `results` for list endpoints.
   if (Array.isArray(data?.results)) return data.results as DjangoPostRaw[];
